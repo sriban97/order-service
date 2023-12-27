@@ -2,7 +2,7 @@ spring:
   application:
     name: order-service
   config:
-    import: "optional:configserver:http://192.168.1.31:9090"
+    import: 'optional:configserver:${config-server}'
     name: order-service
   profiles:
     active: dev
