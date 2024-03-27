@@ -15,7 +15,7 @@ public class OrderControllerAspect {
 
     @Before(value = "execution(* com.green.orderservice.controller.OrderRestController.*(..))")
     public void before(JoinPoint joinPoint) {
-        log.info("{} Being..", joinPoint.getSignature());
+        log.info("{} Being...", joinPoint.getSignature());
     }
 
     @After(value = "execution(* com.green.orderservice.controller.OrderRestController.*(..))")
@@ -28,7 +28,6 @@ public class OrderControllerAspect {
         log.error("{} Exception {}", joinPoint.getSignature(), exception.getMessage());
 
     }
-
     @AfterReturning(value = "execution(* com.green.orderservice.controller.OrderRestController.*(..))", returning = "response")
     public void afterThrowing(JoinPoint joinPoint, ResponseEntity<Order> response) {
         log.info("{} Response send Status {} Body {}", joinPoint.getSignature(), response.getStatusCode(),response.getBody());
