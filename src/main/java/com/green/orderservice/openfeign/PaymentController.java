@@ -15,8 +15,8 @@ import java.util.concurrent.CompletableFuture;
 @FeignClient(name = "payment-service", path = "/payment")
 public interface PaymentController {
 
-    @CircuitBreaker(name = "payment-service", fallbackMethod = "fallbackCircuitBreaker")
-    @Retry(name = "payment-service")
+//    @CircuitBreaker(name = "payment-service", fallbackMethod = "fallbackCircuitBreaker")
+//    @Retry(name = "payment-service")
 //    @RateLimiter(name = "consumer-service", fallbackMethod = "fallbackRateLimiter" )
 //    @TimeLimiter(name = "consumer-service")
 //    @Bulkhead(name = "consumer-service", fallbackMethod = "getBulkhead" )
@@ -25,11 +25,11 @@ public interface PaymentController {
     CompletableFuture<ResponseEntity<Payment>> save(@RequestBody Payment payment);
 
 
-    default ResponseEntity<Payment> fallbackCircuitBreaker(Payment payment ,Exception ex) {
+    default ResponseEntity<Payment> fallbackCircuitBreaker(Payment payment, Exception ex) {
         return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
     }
 
-    default ResponseEntity<Payment> fallbackRetry(Payment payment ,Exception ex) {
+    default ResponseEntity<Payment> fallbackRetry(Payment payment, Exception ex) {
         return new ResponseEntity<>(null, HttpStatus.GATEWAY_TIMEOUT);
     }
 
