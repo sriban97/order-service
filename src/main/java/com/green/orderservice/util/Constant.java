@@ -5,7 +5,6 @@ public interface Constant {
         String SSO_ID = "sso-id";
     }
 
-
     interface Payment {
         String TOPIC_CREATE_PAYMENT = "create-payment";
     }

@@ -13,6 +13,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,15 +28,12 @@ public class OrderRestController {
 
     @Autowired
     private Environment environment;
-
     @Autowired
     private OrderRepository orderRepository;
-
     @Autowired
     private PaymentProducer paymentProducer;
     @Autowired
     private PaymentController paymentController;
-
 
     @PostMapping(name = "Save Order", path = "/save")
     public ResponseEntity<OrderResponse> save(@RequestBody Order order, @RequestHeader HttpHeaders header) {
@@ -45,8 +43,34 @@ public class OrderRestController {
         log.info("{} SSO {} Begin...", SSO, LOG_NAME);
 
         Order order1 = orderRepository.save(order);
+        Payment payment = paymentController.save(Payment.builder().orderId(order.getId()).amount(order.getRate()).build());
+
+        log.info("{} SSO {} End.", SSO, LOG_NAME);
+        return new ResponseEntity<>(OrderResponse.builder().order(order1).payment(payment).build(), HttpStatus.OK);
+    }
+
+    @PostMapping(name = "Save Order", path = "/save/v1")
+    public ResponseEntity<OrderResponse> saveV1(@RequestBody Order order, @RequestHeader HttpHeaders header) {
+        var LOG_NAME = "saveV1";
+        var SSO = header.get(Constant.Header.SSO_ID);
+
+        log.info("{} SSO {} Begin...", SSO, LOG_NAME);
+        Order order1 = orderRepository.save(order);
+        paymentProducer.pushToPayment(Payment.builder().orderId(order.getId()).amount(order.getRate()).build());
+        log.info("{} SSO {} End.", SSO, LOG_NAME);
+        return new ResponseEntity<>(OrderResponse.builder().order(order1).payment(null).build(), HttpStatus.OK);
+    }
+
+    @PostMapping(name = "Save Order", path = "/save/v2")
+    public ResponseEntity<OrderResponse> saveV2(@RequestBody Order order, @RequestHeader HttpHeaders header) {
+        var LOG_NAME = "save";
+        var SSO = header.get(Constant.Header.SSO_ID);
+
+        log.info("{} SSO {} Begin...", SSO, LOG_NAME);
+
+        Order order1 = orderRepository.save(order);
         AtomicReference<Payment> atomicReference = new AtomicReference<>();
-        CompletableFuture<ResponseEntity<Payment>> completableFuture = paymentController.save(Payment.builder().orderId(order.getId()).amount(order.getRate()).build());
+        CompletableFuture<ResponseEntity<Payment>> completableFuture = paymentController.saveV2(Payment.builder().orderId(order.getId()).amount(order.getRate()).build());
         completableFuture.whenCompleteAsync((response, error) -> {
             log.info("{} response {},error {}", LOG_NAME, response, error.toString());
             if (!ObjectUtils.isEmpty(error)) {
@@ -65,27 +89,18 @@ public class OrderRestController {
         return new ResponseEntity<>(OrderResponse.builder().order(order1).payment(atomicReference.get()).build(), HttpStatus.OK);
     }
 
-    @PostMapping(name = "Save Order", path = "/save/v1")
-    public ResponseEntity<OrderResponse> saveV1(@RequestBody Order order) {
-        var LOG_NAME = "saveV1";
-        log.info("{} Begin...", LOG_NAME);
-        Order order1 = orderRepository.save(order);
-        paymentProducer.pushToPayment(Payment.builder().orderId(order.getId()).amount(order.getRate()).build());
-        log.info("{} End.", LOG_NAME);
-        return new ResponseEntity<>(OrderResponse.builder().order(order1).payment(null).build(), HttpStatus.OK);
-    }
-
     @GetMapping(name = "Get Order by ID ", path = "/getById")
-    public ResponseEntity<Order> getById(@RequestParam("id") Long id) {
+    public ResponseEntity<Order> getById(@RequestParam("id") Long id, @Header HttpHeaders header) {
         var LOG_NAME = "getById";
+        var SSO = header.getOrEmpty(Constant.Header.SSO_ID);
 
-        log.info("{} Begin...", LOG_NAME);
+        log.info("{} SSO {} Begin...", LOG_NAME, SSO);
 
         log.info("{} id {}", LOG_NAME, id);
         Order order = orderRepository.findById(id).orElse(null);
         log.info("{} order {}", LOG_NAME, order);
 
-        log.info("{} End.", LOG_NAME);
+        log.info("{} SSO {} End.", LOG_NAME, SSO);
         return new ResponseEntity<>(order, HttpStatus.OK);
 
     }
