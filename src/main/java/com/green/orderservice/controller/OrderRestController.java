@@ -7,7 +7,8 @@ import com.green.orderservice.openfeign.PaymentController;
 import com.green.orderservice.producer.PaymentProducer;
 import com.green.orderservice.repository.OrderRepository;
 import com.green.orderservice.util.Constant;
-import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
@@ -23,9 +24,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @RestController
 @RequestMapping(name = "Order", path = "/order")
-@Slf4j
+//@Slf4j
 public class OrderRestController {
-
+    Logger log = LogManager.getLogger(OrderRestController.class);
     @Autowired
     private Environment environment;
     @Autowired

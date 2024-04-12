@@ -17,10 +17,34 @@
         <java.version>17</java.version>
         <spring-cloud.version>2022.0.4</spring-cloud.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>splunk-artifactory</id>
+            <name>Splunk Releases</name>
+            <url>https://splunk.jfrog.io/splunk/ext-releases-local</url>
+        </repository>
+    </repositories>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.splunk.logging</groupId>
+            <artifactId>splunk-library-javalogging</artifactId>
+            <version>1.8.0</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -63,10 +87,10 @@
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-tracing-bridge-brave</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>io.zipkin.reporter2</groupId>-->
-<!--            <artifactId>zipkin-reporter-brave</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>io.zipkin.reporter2</groupId>-->
+        <!--            <artifactId>zipkin-reporter-brave</artifactId>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-config</artifactId>
