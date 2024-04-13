@@ -7,8 +7,7 @@ import com.green.orderservice.openfeign.PaymentController;
 import com.green.orderservice.producer.PaymentProducer;
 import com.green.orderservice.repository.OrderRepository;
 import com.green.orderservice.util.Constant;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
@@ -24,9 +23,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @RestController
 @RequestMapping(name = "Order", path = "/order")
-//@Slf4j
+@Slf4j
 public class OrderRestController {
-    Logger log = LogManager.getLogger(OrderRestController.class);
+
     @Autowired
     private Environment environment;
     @Autowired
@@ -41,12 +40,15 @@ public class OrderRestController {
         var LOG_NAME = "save";
         var SSO = header.get(Constant.Header.SSO_ID);
 
-        log.info("{} SSO {} Begin...", SSO, LOG_NAME);
+        log.info("{} SSO {} Begin...", LOG_NAME, SSO);
 
         Order order1 = orderRepository.save(order);
-        Payment payment = paymentController.save(Payment.builder().orderId(order.getId()).amount(order.getRate()).build());
+        log.info("{} order1 {}", LOG_NAME, order1);
 
-        log.info("{} SSO {} End.", SSO, LOG_NAME);
+        Payment payment = paymentController.save(Payment.builder().orderId(order.getId()).amount(order.getRate()).build(),header).getBody();
+        log.info("{} payment {}", LOG_NAME, payment);
+
+        log.info("{} SSO {} End.", LOG_NAME, SSO);
         return new ResponseEntity<>(OrderResponse.builder().order(order1).payment(payment).build(), HttpStatus.OK);
     }
 
@@ -55,19 +57,23 @@ public class OrderRestController {
         var LOG_NAME = "saveV1";
         var SSO = header.get(Constant.Header.SSO_ID);
 
-        log.info("{} SSO {} Begin...", SSO, LOG_NAME);
+        log.info("{} SSO {} Begin...", LOG_NAME, SSO);
+
         Order order1 = orderRepository.save(order);
+        log.info("{} order1 {}", LOG_NAME, order1);
+
         paymentProducer.pushToPayment(Payment.builder().orderId(order.getId()).amount(order.getRate()).build());
-        log.info("{} SSO {} End.", SSO, LOG_NAME);
+
+        log.info("{} SSO {} End.", LOG_NAME, SSO);
         return new ResponseEntity<>(OrderResponse.builder().order(order1).payment(null).build(), HttpStatus.OK);
     }
 
     @PostMapping(name = "Save Order", path = "/save/v2")
     public ResponseEntity<OrderResponse> saveV2(@RequestBody Order order, @RequestHeader HttpHeaders header) {
-        var LOG_NAME = "save";
+        var LOG_NAME = "saveV2";
         var SSO = header.get(Constant.Header.SSO_ID);
 
-        log.info("{} SSO {} Begin...", SSO, LOG_NAME);
+        log.info("{} SSO {} Begin...", LOG_NAME, SSO);
 
         Order order1 = orderRepository.save(order);
         AtomicReference<Payment> atomicReference = new AtomicReference<>();
@@ -86,7 +92,7 @@ public class OrderRestController {
             }
         });
 
-        log.info("{} SSO {} End.", SSO, LOG_NAME);
+        log.info("{} SSO {} End.", LOG_NAME, SSO);
         return new ResponseEntity<>(OrderResponse.builder().order(order1).payment(atomicReference.get()).build(), HttpStatus.OK);
     }
 

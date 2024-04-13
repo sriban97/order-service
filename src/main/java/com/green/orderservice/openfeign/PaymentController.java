@@ -2,7 +2,6 @@ package com.green.orderservice.openfeign;
 
 import com.green.orderservice.model.Payment;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -16,21 +15,22 @@ import java.util.concurrent.CompletableFuture;
 
 @FeignClient(name = "payment-service", path = "/payment")
 public interface PaymentController {
-    @PostMapping(name = "Save Payment", path = "/save")
-    Payment save(@RequestBody Payment payment);
-
+    @CircuitBreaker(name = "payment-service", fallbackMethod = "fallbackCircuitBreaker")
 //    @CircuitBreaker(name = "payment-service", fallbackMethod = "fallbackCircuitBreaker")
 //    @Retry(name = "payment-service")
 //    @RateLimiter(name = "consumer-service", fallbackMethod = "fallbackRateLimiter" )
 //    @TimeLimiter(name = "consumer-service")
 //    @Bulkhead(name = "consumer-service", fallbackMethod = "getBulkhead" )
+    @PostMapping(name = "Save Payment", path = "/save")
+    ResponseEntity<Payment> save(@RequestBody Payment payment, @RequestHeader HttpHeaders header);
+
+
     @PostMapping(name = "Save Payment", path = "/save/v2")
     @Async
     CompletableFuture<ResponseEntity<Payment>> saveV2(@RequestBody Payment payment);
 
 
-
-    default ResponseEntity<Payment> fallbackCircuitBreaker(Payment payment, Exception ex) {
+    default ResponseEntity<Payment> fallbackCircuitBreaker(Payment payment, HttpHeaders header, Exception ex) {
         return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
     }
 
