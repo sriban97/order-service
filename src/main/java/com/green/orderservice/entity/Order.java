@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@NamedStoredProcedureQuery(name = "test", procedureName = "procedure_name", parameters = {
+        @StoredProcedureParameter(mode = ParameterMode.IN, name = "arg", type = Integer.class)})
 public class Order {
 
     @Id

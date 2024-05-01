@@ -45,7 +45,7 @@ public class OrderRestController {
         Order order1 = orderRepository.save(order);
         log.info("{} order1 {}", LOG_NAME, order1);
 
-        Payment payment = paymentController.save(Payment.builder().orderId(order.getId()).amount(order.getRate()).build(),header).getBody();
+        Payment payment = paymentController.save(Payment.builder().orderId(order.getId()).amount(order.getRate()).build(), header).getBody();
         log.info("{} payment {}", LOG_NAME, payment);
 
         log.info("{} SSO {} End.", LOG_NAME, SSO);
@@ -118,5 +118,10 @@ public class OrderRestController {
         return List.of("ABC", "AA");
     }
 
+    @GetMapping("/proc/{val}")
+    public int getProc(@PathVariable("val") int i) {
+        int res=0;
+        return orderRepository.explicitlyNamedPlus1inout(i);
+    }
 
 }
