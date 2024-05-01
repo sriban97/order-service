@@ -1,7 +1,10 @@
 package com.green.orderservice.openfeign;
 
 import com.green.orderservice.model.Payment;
+import com.green.orderservice.util.Constant;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -12,17 +15,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 @FeignClient(name = "payment-service", path = "/payment")
 public interface PaymentController {
-    @CircuitBreaker(name = "payment-service", fallbackMethod = "fallbackCircuitBreaker")
+    Logger log = LogManager.getLogger(PaymentController.class);
+
 //    @CircuitBreaker(name = "payment-service", fallbackMethod = "fallbackCircuitBreaker")
 //    @Retry(name = "payment-service")
 //    @RateLimiter(name = "consumer-service", fallbackMethod = "fallbackRateLimiter" )
 //    @TimeLimiter(name = "consumer-service")
 //    @Bulkhead(name = "consumer-service", fallbackMethod = "getBulkhead" )
     @PostMapping(name = "Save Payment", path = "/save")
-    ResponseEntity<Payment> save(@RequestBody Payment payment, @RequestHeader HttpHeaders header);
+    ResponseEntity<Payment> save(@RequestBody Payment payment);
 
 
     @PostMapping(name = "Save Payment", path = "/save/v2")
@@ -31,7 +36,9 @@ public interface PaymentController {
 
 
     default ResponseEntity<Payment> fallbackCircuitBreaker(Payment payment, HttpHeaders header, Exception ex) {
-        return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        var LOG_NAME = "fallbackCircuitBreaker";
+        log.error("{} error {}", LOG_NAME, ex.getMessage());
+        return new ResponseEntity<>(payment, HttpStatus.NOT_FOUND);
     }
 
     default ResponseEntity<Payment> fallbackRetry(Payment payment, Exception ex) {

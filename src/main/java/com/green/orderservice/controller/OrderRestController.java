@@ -45,7 +45,12 @@ public class OrderRestController {
         Order order1 = orderRepository.save(order);
         log.info("{} order1 {}", LOG_NAME, order1);
 
-        Payment payment = paymentController.save(Payment.builder().orderId(order.getId()).amount(order.getRate()).build(), header).getBody();
+        ResponseEntity<Payment> response = paymentController.save(Payment.builder().orderId(order.getId()).amount(order.getRate()).build());
+        log.info("{} response {}", LOG_NAME, response);
+        Payment payment = null;
+        if (response.getStatusCode().equals(HttpStatus.OK)) {
+            payment = response.getBody();
+        }
         log.info("{} payment {}", LOG_NAME, payment);
 
         log.info("{} SSO {} End.", LOG_NAME, SSO);
@@ -120,7 +125,7 @@ public class OrderRestController {
 
     @GetMapping("/proc/{val}")
     public int getProc(@PathVariable("val") int i) {
-        int res=0;
+        int res = 0;
         return orderRepository.explicitlyNamedPlus1inout(i);
     }
 
