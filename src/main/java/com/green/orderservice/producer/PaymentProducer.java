@@ -25,7 +25,7 @@ public class PaymentProducer {
 
         CompletableFuture<SendResult<String, Payment>> completableFuture = kafkaTemplate.sendDefault(Constant.Payment.TOPIC_CREATE_PAYMENT, payment);
         completableFuture.whenCompleteAsync((success, error) -> {
-            if (ObjectUtils.isEmpty(error)) {
+            if (!ObjectUtils.isEmpty(error)) {
                 log.error("{} Payment send failed {}", LOG_NAME, error.getMessage());
             } else {
                 log.info("{} Payment send Successfully to Topic {}, Message {} ", LOG_NAME, success.getProducerRecord().topic(), success.getProducerRecord().value());
