@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 public interface PaymentController {
     Logger log = LogManager.getLogger(PaymentController.class);
 
-//    @CircuitBreaker(name = "payment-service", fallbackMethod = "fallbackCircuitBreaker")
+    @CircuitBreaker(name = "payment-service", fallbackMethod = "fallbackCircuitBreaker")
 //    @Retry(name = "payment-service")
 //    @RateLimiter(name = "consumer-service", fallbackMethod = "fallbackRateLimiter" )
 //    @TimeLimiter(name = "consumer-service")
