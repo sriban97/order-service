@@ -9,6 +9,7 @@ import com.green.orderservice.repository.OrderRepository;
 import com.green.orderservice.util.Constant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -119,7 +120,9 @@ public class OrderRestController {
 
     @GetMapping(name = "Get Order by ID ", path = "/test")
     @ResponseBody
+    @Cacheable("test")
     public List<String> test() {
+        System.out.println("test");
         return List.of("ABC", "AA");
     }
 
