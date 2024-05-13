@@ -25,7 +25,7 @@ public class SwaggerConfig {
         contact.setName("Green");
         contact.setUrl("https://www.green.com");
 
-        License mitLicense = new License().name("MIT License").url("https://green.com/licenses/mit/");
+        License mitLicense = new License().name("License").url("https://green.com/licenses/mit/");
 
         Info info = new Info()
                 .title("Green Management API")
