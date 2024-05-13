@@ -9,6 +9,7 @@ import com.green.orderservice.repository.OrderRepository;
 import com.green.orderservice.util.Constant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
@@ -118,9 +119,34 @@ public class OrderRestController {
 
     }
 
+    @GetMapping(name = "Get All Orders ", path = "/findAll")
+    @Cacheable(cacheNames = "catch_orders")
+    public ResponseEntity<List<Order>> findAll(@Header HttpHeaders header) {
+        var LOG_NAME = "findAll";
+        var SSO = header.getOrEmpty(Constant.Header.SSO_ID);
+
+        log.info("{} SSO {} Begin...", LOG_NAME, SSO);
+
+        List<Order> orders = orderRepository.findAll();
+        log.info("{} order {}", LOG_NAME, orders);
+
+        log.info("{} SSO {} End.", LOG_NAME, SSO);
+        return new ResponseEntity<>(orders, HttpStatus.OK);
+    }
+
+    @GetMapping(name = "Get Order by ID ", path = "/clear-orders")
+    @CacheEvict(cacheNames = "catch_orders")
+    public ResponseEntity<String> clearOrders(@Header HttpHeaders header) {
+        var LOG_NAME = "findAll";
+        var SSO = header.getOrEmpty(Constant.Header.SSO_ID);
+        log.info("{} SSO {} Begin...", LOG_NAME, SSO);
+        String response = "Catch Cleared.";
+        log.info("{} response {}", LOG_NAME, response);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @GetMapping(name = "Get Order by ID ", path = "/test")
     @ResponseBody
-    @Cacheable("test")
     public List<String> test() {
         System.out.println("test");
         return List.of("ABC", "AA");
